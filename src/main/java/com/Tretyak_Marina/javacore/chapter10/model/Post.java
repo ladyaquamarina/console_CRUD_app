@@ -2,22 +2,22 @@ package com.Tretyak_Marina.javacore.chapter10.model;
 
 import java.util.*;
 public class Post {
-    private int id;
+    private Integer id;
     private String content;
     private final Date created;
     private Date updated;
     private List<Label> labels;
     private PostStatus Status;
 
-    public Post (int id, String content) {
-        this.id = id;
+    public Post (String content) {
+        this.id = null;
         this.content = content;
         this.created = new Date();
         this.updated = this.created;
         this.labels = new ArrayList<>();
         this.Status = PostStatus.ACTIVE;
     }
-    public int getId() {
+    public Integer getId() {
         return this.id;
     }
     public String getContent() {
@@ -38,13 +38,10 @@ public class Post {
 
     public void setId(int newId) {
         this.id = newId;
-        this.setUpdated();
+        this.updated = new Date();
     }
     public void setContent(String newContent) {
         this.content = newContent;
-        this.setUpdated();
-    }
-    private void setUpdated() {
         this.updated = new Date();
     }
     public void setStatus(PostStatus newStatus) {
@@ -52,7 +49,7 @@ public class Post {
     }
     public void addLabel(Label label) {
         this.labels.add(label);
-        this.setUpdated();
+        this.updated = new Date();
     }
     public void deleteLabel(int labelId) {
         for (Label l : this.labels)
@@ -60,6 +57,6 @@ public class Post {
                 this.labels.remove(l);
                 break;
             }
-        this.setUpdated();
+        this.updated = new Date();
     }
 }

@@ -1,16 +1,16 @@
 package com.Tretyak_Marina.javacore.chapter10.model;
 
 public class Label {
-    private int id;
+    private Integer id;
     private String name;
     private PostStatus Status;
 
-    public Label (int id, String name) {
-        this.id = id;
+    public Label (String name) {
+        this.id = null;
         this.name = name;
         this.Status = PostStatus.ACTIVE;
     }
-    public int getId() {
+    public Integer getId() {
         return this.id;
     }
     public String getName() {

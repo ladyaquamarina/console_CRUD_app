@@ -9,33 +9,13 @@ import java.util.List;
 import java.util.Scanner;
 
 public class PostView {
-    PostController controller = new PostController();
+    private final PostController controller = new PostController();
     public void createPost() {
         Scanner console = new Scanner(System.in);
-        System.out.print("Enter the ID of the post being created: ");
-        int id = 0;
-        try {
-            id = console.nextInt();
-        } catch (InputMismatchException e) {
-            System.out.println("\nYour enter is incorrect!\n");
-            return;
-        }
-        console.nextLine();
         System.out.print("Enter the content of the post being created: ");
         String content = console.nextLine();
-        if (controller.createPost(id, content))
-            System.out.println("New post has been successfully created!\n");
-        else
-            System.out.println("New post has not been created. Try another ID\n");
-    }
-    public void createPost(int id) {
-        Scanner console = new Scanner(System.in);
-        System.out.print("\nEnter the content of the post being created: ");
-        String content = console.nextLine();
-        if (controller.createPost(id, content))
-            System.out.println("New post has been successfully created!\n");
-        else
-            System.out.println("New post has not been created. Try another ID\n");
+        controller.createPost(content);
+        System.out.println("\nNew post has been successfully created!\n");
     }
     public void readPost() {
         Scanner console = new Scanner(System.in);
@@ -48,7 +28,7 @@ public class PostView {
             return;
         }
         console.nextLine();
-        Post post = controller.readPost(id);
+        Post post = controller.getPost(id);
         if (post != null) {
             System.out.println("\nThe post you are looking for:");
             printPost(post);
@@ -58,13 +38,14 @@ public class PostView {
             System.out.println("\nThe post is not found\n");
     }
     public void readAllPosts() {
-        List<Post> posts = controller.readAllPosts();
+        List<Post> posts = controller.getAllPosts();
         if (posts.size() > 0) {
-            System.out.println("All posts:");
+            System.out.println("All posts:\n");
             int i = 1;
             for (Post p : posts) {
                 System.out.print(i++ + ") ");
                 printPost(p);
+                System.out.println();
             }
         }
         else
@@ -81,54 +62,13 @@ public class PostView {
             return;
         }
         console.nextLine();
-        if (!controller.updatePost(id, PostStatus.UNDER_REVIEW))
+        if (controller.updatePost(id, PostStatus.UNDER_REVIEW) == null)
             return;
-        System.out.println("\nSelect the field you want to change: ");
-        System.out.println("1 - ID");
-        System.out.println("2 - content");
-        System.out.println("Your chose is: ");
-        int c = 0;
-        try {
-            c = console.nextInt();
-        } catch (InputMismatchException e) {
-            System.out.println("\nYour enter is incorrect!\n");
-            controller.updatePost(id, PostStatus.ACTIVE);
-            return;
-        }
-        console.nextLine();
-        switch (c) {
-            case 1 -> {
-                System.out.print("\nEnter new ID: ");
-                int newId = 0;
-                try {
-                    newId = console.nextInt();
-                } catch (InputMismatchException e) {
-                    System.out.println("\nYour enter is incorrect!\n");
-                    controller.updatePost(id, PostStatus.ACTIVE);
-                    return;
-                }
-                console.nextLine();
-                if (!controller.updatePost(id, newId)) {
-                    System.out.println("\nThe post with this ID already exist\n");
-                    controller.updatePost(id, PostStatus.ACTIVE);
-                } else {
-                    System.out.println("\nThe post has been successfully updated!\n");
-                    controller.updatePost(newId, PostStatus.ACTIVE);
-                }
-            }
-            case 2 -> {
-                System.out.print("\nEnter new name: ");
-                String newContent = console.nextLine();
-                controller.updatePost(id, newContent);
-                controller.updatePost(id, PostStatus.ACTIVE);
-                System.out.println("\nThe post has been successfully updated!\n");
-            }
-            default -> {
-                System.out.println("\nYour enter is incorrect!\n");
-                controller.updatePost(id, PostStatus.ACTIVE);
-                System.out.println("\nThe post has been successfully updated!\n");
-            }
-        }
+        System.out.print("Enter new name: ");
+        String newContent = console.nextLine();
+        controller.updatePost(id, newContent);
+        controller.updatePost(id, PostStatus.ACTIVE);
+        System.out.println("\nThe post has been successfully updated!\n");
     }
     public void addLabelToPost(){
         Scanner console = new Scanner(System.in);
@@ -141,9 +81,9 @@ public class PostView {
             return;
         }
         console.nextLine();
-        if (!controller.updatePost(postId, PostStatus.UNDER_REVIEW))
+        if (controller.updatePost(postId, PostStatus.UNDER_REVIEW) == null)
             return;
-        System.out.println("\nDo you want to create new label (1) or choose the existing one (2)? Print '1' or '2'");
+        System.out.println("Do you want to create new label (1) or choose the existing one (2)? Print '1' or '2'");
         System.out.print("Your answer: ");
         int answer = 0;
         try {
@@ -158,22 +98,12 @@ public class PostView {
         LabelController lc = new LabelController();
         switch (answer) {
             case 1 -> {
-                LabelView lw = new LabelView();
-                System.out.print("\nEnter the ID of the label being created: ");
-                int id = 0;
-                try {
-                    id = console.nextInt();
-                } catch (InputMismatchException e) {
-                    System.out.println("\nYour enter is incorrect!\n");
-                    controller.updatePost(postId, PostStatus.ACTIVE);
-                    return;
-                }
-                console.nextLine();
-                lw.createLabel(id);
-                label = lc.readLabel(id);
+                System.out.print("Enter the name of the label being created: ");
+                String name = console.nextLine();
+                label = lc.createLabel(name);
             }
             case 2 -> {
-                System.out.print("\nEnter ID of the label you want to add to the post: ");
+                System.out.print("Enter ID of the label you want to add to the post: ");
                 int labelId = 0;
                 try {
                     labelId = console.nextInt();
@@ -183,7 +113,12 @@ public class PostView {
                     return;
                 }
                 console.nextLine();
-                label = lc.readLabel(labelId);
+                label = lc.getLabel(labelId);
+                if (label == null) {
+                    controller.updatePost(postId, PostStatus.ACTIVE);
+                    System.out.println("\nThe label is not found\n");
+                    return;
+                }
             }
             default -> {
                 controller.updatePost(postId, PostStatus.ACTIVE);
@@ -193,7 +128,7 @@ public class PostView {
         }
         controller.addLabelToPost(postId, label);
         controller.updatePost(postId, PostStatus.ACTIVE);
-        System.out.println("The label has been successfully added to the post!");
+        System.out.println("\nThe label has been successfully added to the post!\n");
     }
     public void deleteLabelFromPost() {
         Scanner console = new Scanner(System.in);
@@ -206,12 +141,12 @@ public class PostView {
             return;
         }
         console.nextLine();
-        if (!controller.updatePost(postId, PostStatus.UNDER_REVIEW))
+        if (controller.updatePost(postId, PostStatus.UNDER_REVIEW) == null)
             return;
-        printListLabels(controller.getPost(postId).getLabels());
+        List<Label> labelsOfThisPost = controller.getPost(postId).getLabels();
+        printListLabels(labelsOfThisPost);
         System.out.println();
-        int s = controller.getPost(postId).getLabels().size();
-        if (s < 1)
+        if (labelsOfThisPost.size() < 1)
             return;
         System.out.println("Label under which number in the list do you want to delete from the post?");
         System.out.print("Enter number: ");
@@ -224,17 +159,15 @@ public class PostView {
             return;
         }
         console.nextLine();
-        if ((num <= 0) || (num > s)) {
+        if ((num <= 0) || (num > labelsOfThisPost.size())) {
             System.out.println("\nYour enter is incorrect!\n");
             controller.updatePost(postId, PostStatus.ACTIVE);
             return;
         }
         int labelId = controller.getPost(postId).getLabels().get(num - 1).getId();
-        if (controller.deleteLabelFromPost(postId, labelId))
-            System.out.println("\nThe label has been successfully deleted from the post!\n");
-        else
-            System.out.println("\nThe label has not been deleted from this post\n");
+        controller.deleteLabelFromPost(postId, labelId);
         controller.updatePost(postId, PostStatus.ACTIVE);
+        System.out.println("\nThe label has been successfully deleted from the post!\n");
     }
     public void deleteAllLabelsFromPost() {
         Scanner console = new Scanner(System.in);
@@ -246,14 +179,12 @@ public class PostView {
             System.out.println("\nYour enter is incorrect!\n");
             return;
         }
-        if (!controller.updatePost(id, PostStatus.UNDER_REVIEW))
+        if (controller.updatePost(id, PostStatus.UNDER_REVIEW) == null)
             return;
         console.nextLine();
-        if (controller.deleteAllLabelFromPost(id))
-            System.out.println("\nAll labels have been successfully deleted from this post!");
-        else
-            System.out.println("\nLabels have not been deleted from this post");
+        controller.deleteAllLabelFromPost(id);
         controller.updatePost(id, PostStatus.ACTIVE);
+        System.out.println("\nAll labels have been successfully deleted from this post!\n");
     }
     public void deletePost() {
         Scanner console = new Scanner(System.in);
@@ -266,15 +197,14 @@ public class PostView {
             return;
         }
         console.nextLine();
-        System.out.println();
-        if (controller.deletePost(id))
-            System.out.println("The post has been successfully deleted!\n");
+        controller.deletePost(id);
+        System.out.println("\nThe post has been successfully deleted!\n");
     }
     public void deleteAllPosts() {
-        if (controller.deleteAllPosts())
-            System.out.println("\nAll posts have been successfully deleted!\n");
+        controller.deleteAllPosts();
+        System.out.println("\nAll posts have been successfully deleted!\n");
     }
-    public void printPost(Post p) {
+    private void printPost(Post p) {
         System.out.println("id: " + p.getId());
         System.out.println("content: " + p.getContent());
         System.out.println("created: " + p.getCreated());
@@ -282,7 +212,7 @@ public class PostView {
         System.out.println("Status: " + p.getStatus());
         printListLabels(p.getLabels());
     }
-    public void printListLabels(List<Label> labels) {
+    private void printListLabels(List<Label> labels) {
         if (labels.size() < 1) {
             System.out.println("This post has no labels");
             return;
@@ -292,7 +222,7 @@ public class PostView {
         for (Label l : labels)
             System.out.println(i++ + ".    [id: " + l.getId() + ", name: " + l.getName() + "]");
     }
-    public void listOfOptions() {
+    public void menu() {
         while (true) {
             point:
             {
@@ -330,14 +260,13 @@ public class PostView {
                         System.out.println("\nAll posts will be deleted! Are you sure?");
                         System.out.print("Enter 'y' to delete all posts:");
                         String y = console.nextLine();
-                        System.out.println();
                         if (y.equals("y"))
                             deleteAllPosts();
                         else
-                            System.out.println("Deleting is cancelling!\n");
-                        System.out.println();
+                            System.out.println("\nDeleting is cancelling!\n");
                     }
                     case 10 -> {
+                        System.out.println();
                         return;
                     }
                     default -> System.out.println("\nYour enter is incorrect!\n");

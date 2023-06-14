@@ -3,20 +3,20 @@ package com.Tretyak_Marina.javacore.chapter10.model;
 import java.util.*;
 
 public class Writer {
-    private int id;
+    private Integer id;
     private String firstName;
     private String lastName;
     private List<Post> posts;
     private PostStatus Status;
 
-    public Writer (int id, String firstName, String lastName){
-        this.id = id;
+    public Writer (String firstName, String lastName){
+        this.id = null;
         this.firstName = firstName;
         this.lastName = lastName;
         this.posts = new ArrayList<>();
         this.Status = PostStatus.ACTIVE;
     }
-    public int getId() {
+    public Integer getId() {
         return this.id;
     }
     public String getFirstName() {

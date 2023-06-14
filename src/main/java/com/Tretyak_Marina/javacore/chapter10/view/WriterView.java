@@ -9,26 +9,16 @@ import java.util.List;
 import java.util.Scanner;
 
 public class WriterView {
-    WriterController controller = new WriterController();
+    private final WriterController controller = new WriterController();
     public void createWriter() {
         Scanner console = new Scanner(System.in);
-        System.out.print("Enter ID of the writer being created: ");
-        int id = 0;
-        try {
-            id = console.nextInt();
-        } catch (InputMismatchException e) {
-            System.out.println("\nYour enter is incorrect!\n");
-            return;
-        }
-        console.nextLine();
         System.out.print("Enter first name of the writer being created: ");
         String firstName = console.nextLine();
         System.out.print("Enter last name of the writer being created: ");
         String lastName = console.nextLine();
         System.out.println();
-        if (controller.createWriter(id, firstName, lastName))
-            System.out.println("The writer has been successfully created!\n");
-        else System.out.println("New writer has not been created. Try another ID\n");
+        controller.createWriter(firstName, lastName);
+        System.out.println("\nThe writer has been successfully created!\n");
     }
     public void readWriter() {
         Scanner console = new Scanner(System.in);
@@ -41,7 +31,7 @@ public class WriterView {
             return;
         }
         console.nextLine();
-        Writer writer = controller.readWriter(id);
+        Writer writer = controller.getWriter(id);
         if (writer != null) {
             System.out.println("\nThe writer you are looking for: ");
             printWriter(writer);
@@ -51,9 +41,9 @@ public class WriterView {
             System.out.println("\nThe writer is not found\n");
     }
     public void readAllWriters() {
-        List<Writer> writers = controller.readAllWriters();
+        List<Writer> writers = controller.getAllWriters();
         if (writers.size() > 0) {
-            System.out.println("All writers: ");
+            System.out.println("All writers:\n ");
             int i = 1;
             for (Writer w : writers) {
                 System.out.print(i++ + ") ");
@@ -75,13 +65,12 @@ public class WriterView {
             return;
         }
         console.nextLine();
-        if (!controller.updateWriter(id, PostStatus.UNDER_REVIEW))
+        if (controller.updateWriter(id, PostStatus.UNDER_REVIEW) == null)
             return;
         System.out.println("Select the field you want to change: ");
-        System.out.println("1 - ID");
-        System.out.println("2 - first name");
-        System.out.println("3 - last name");
-        System.out.println("Your chose is: ");
+        System.out.println("1 - first name");
+        System.out.println("2 - last name");
+        System.out.print("Your chose is: ");
         int c = 0;
         try {
             c = console.nextInt();
@@ -93,34 +82,14 @@ public class WriterView {
         console.nextLine();
         switch (c) {
             case 1 -> {
-                System.out.print("\nEnter new ID: ");
-                int newId = 0;
-                try {
-                    newId = console.nextInt();
-                } catch (InputMismatchException e) {
-                    System.out.println("\nYour enter is incorrect!\n");
-                    controller.updateWriter(id, PostStatus.ACTIVE);
-                    return;
-                }
-                console.nextLine();
-                if (!controller.updateWriter(id, newId)) {
-                    System.out.println("\nThe writer with this ID already exist!\n");
-                    controller.updateWriter(id, PostStatus.ACTIVE);
-                }
-                else {
-                    System.out.println("\nThe writer has been successfully updated!\n");
-                    controller.updateWriter(newId, PostStatus.ACTIVE);
-                }
-            }
-            case 2 -> {
-                System.out.print("\nEnter new first name: ");
+                System.out.print("Enter new first name: ");
                 String newFirstName = console.nextLine();
                 controller.updateWriter(id, newFirstName, "first");
                 controller.updateWriter(id, PostStatus.ACTIVE);
                 System.out.println("\nThe writer has been successfully updated!\n");
             }
-            case 3 -> {
-                System.out.print("\nEnter new last name: ");
+            case 2 -> {
+                System.out.print("Enter new last name: ");
                 String newLastName = console.nextLine();
                 controller.updateWriter(id, newLastName, "last");
                 controller.updateWriter(id, PostStatus.ACTIVE);
@@ -143,9 +112,9 @@ public class WriterView {
             return;
         }
         console.nextLine();
-        if (controller.updateWriter(writerId, PostStatus.UNDER_REVIEW))
+        if (controller.updateWriter(writerId, PostStatus.UNDER_REVIEW) == null)
             return;
-        System.out.println("\nDo you want to create new post (1) or choose the existing one (2)? Print '1' or '2'");
+        System.out.println("Do you want to create new post (1) or choose the existing one (2)? Print '1' or '2'");
         System.out.print("Your answer: ");
         int answer = 0;
         try {
@@ -160,19 +129,9 @@ public class WriterView {
         PostController pc = new PostController();
         switch (answer) {
             case 1 -> {
-                PostView pw = new PostView();
-                System.out.print("\nEnter the ID of the post being created: ");
-                int id = 0;
-                try {
-                    id = console.nextInt();
-                } catch (InputMismatchException e) {
-                    System.out.println("\nYour enter is incorrect!\n");
-                    controller.updateWriter(writerId, PostStatus.ACTIVE);
-                    return;
-                }
-                console.nextLine();
-                pw.createPost(id);
-                post = pc.readPost(id);
+                System.out.print("Enter the content of the post being created: ");
+                String content = console.nextLine();
+                post = pc.createPost(content);
             }
             case 2 -> {
                 System.out.print("\nEnter ID of the post you want to add to the writer: ");
@@ -185,7 +144,12 @@ public class WriterView {
                     return;
                 }
                 console.nextLine();
-                post = pc.readPost(postId);
+                post = pc.getPost(postId);
+                if (post == null) {
+                    controller.updateWriter(writerId, PostStatus.ACTIVE);
+                    System.out.println("\nThe post not found\n");
+                    return;
+                }
             }
             default -> {
                 controller.updateWriter(writerId, PostStatus.ACTIVE);
@@ -195,7 +159,7 @@ public class WriterView {
         }
         controller.addPostToWriter(writerId, post);
         controller.updateWriter(writerId, PostStatus.ACTIVE);
-        System.out.println("\nThe label has been successfully added to the post!");
+        System.out.println("\nThe label has been successfully added to the post!\n");
     }
     public void deletePostFromWriter() {
         Scanner console = new Scanner(System.in);
@@ -208,12 +172,12 @@ public class WriterView {
             return;
         }
         console.nextLine();
-        if (controller.updateWriter(writerId, PostStatus.UNDER_REVIEW))
+        if (controller.updateWriter(writerId, PostStatus.UNDER_REVIEW) == null)
             return;
-        printListPost(controller.getWriter(writerId).getPosts());
+        List<Post> postsOfThisWriter = controller.getWriter(writerId).getPosts();
+        printListPost(postsOfThisWriter);
         System.out.println();
-        int s = controller.getWriter(writerId).getPosts().size();
-        if (s < 1)
+        if (postsOfThisWriter.size() < 1)
             return;
         System.out.println("Post under which number in the list do you want to delete from the writer?");
         System.out.print("Enter number: ");
@@ -222,20 +186,19 @@ public class WriterView {
             num = console.nextInt();
         } catch (InputMismatchException e) {
             System.out.println("\nYour enter is incorrect!\n");
+            controller.updateWriter(writerId, PostStatus.ACTIVE);
             return;
         }
         console.nextLine();
-        if ((num <= 0) || (num > s)) {
+        if ((num <= 0) || (num > postsOfThisWriter.size())) {
             System.out.println("\nYour enter is incorrect!\n");
+            controller.updateWriter(writerId, PostStatus.ACTIVE);
             return;
         }
         int postId = controller.getWriter(writerId).getPosts().get(num - 1).getId();
-        if (controller.deletePostFromWriter(writerId, postId))
-            System.out.println("\nThe post has been successfully deleted from the post!\n");
-        else
-            System.out.println("\nThe post has not been deleted from this writer\n");
-
+        controller.deletePostFromWriter(writerId, postId);
         controller.updateWriter(writerId, PostStatus.ACTIVE);
+        System.out.println("\nThe post has been successfully deleted from the post!\n");
     }
     public void deleteAllPostsFromWriter() {
         Scanner console = new Scanner(System.in);
@@ -247,11 +210,12 @@ public class WriterView {
             System.out.println("\nYour enter is incorrect!\n");
             return;
         }
+        if (controller.updateWriter(id, PostStatus.UNDER_REVIEW) == null)
+            return;
         console.nextLine();
-        if (controller.deleteAllPostFromWriter(id))
-            System.out.println("\nAll posts have been successfully deleted from this writer!");
-        else
-            System.out.println("\nPosts have not been deleted from this writer");
+        controller.deleteAllPostFromWriter(id);
+        controller.updateWriter(id, PostStatus.ACTIVE);
+        System.out.println("\nAll posts have been successfully deleted from this writer!");
     }
     public void deleteWriter() {
         Scanner console = new Scanner(System.in);
@@ -268,8 +232,8 @@ public class WriterView {
         System.out.println("\nThe writer has been successfully deleted!\n");
     }
     public void deleteAllWriters() {
-        if (controller.deleteAllWriters())
-            System.out.println("\nAll writers have been successfully deleted!\n");
+        controller.deleteAllWriters();
+        System.out.println("\nAll writers have been successfully deleted!\n");
     }
     public void printWriter(Writer w) {
         System.out.println("id: " + w.getId());
@@ -288,7 +252,7 @@ public class WriterView {
         for (Post p : posts)
             System.out.println(i++ + ".    [id: " + p.getId() + ", content: " + p.getContent() + "]");
     }
-    public void listOfOptions() {
+    public void menu() {
         while (true) {
             point:
             {
@@ -326,14 +290,14 @@ public class WriterView {
                         System.out.println("\nAll writers will be deleted! Are you sure?");
                         System.out.print("Enter 'y' to delete all writers:");
                         String y = console.nextLine();
-                        System.out.println();
                         if (y.equals("y"))
                             deleteAllWriters();
                         else
-                            System.out.println("Deleting is cancelling!\n");
+                            System.out.println("\nDeleting is cancelling!\n");
                         System.out.println();
                     }
                     case 10 -> {
+                        System.out.println();
                         return;
                     }
                     default -> System.out.println("\nYour enter is incorrect!\n");
