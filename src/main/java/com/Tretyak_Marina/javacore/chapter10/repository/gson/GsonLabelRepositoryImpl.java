@@ -25,28 +25,26 @@ public class GsonLabelRepositoryImpl implements LabelRepository {
     }
 
     private void rewriteJson(List<Label> labelsList) {
-        try {
-            PrintWriter printWriter = new PrintWriter(FILENAME);
+        try(PrintWriter printWriter = new PrintWriter(FILENAME)) {
             printWriter.write("");
             printWriter.flush();
-            printWriter.close();
-            java.io.Writer ioWriter = new FileWriter(FILENAME);
+        } catch (IOException e) {
+            System.out.println("Exception: " + e + "\n");
+        }
+        try (java.io.Writer ioWriter = new FileWriter(FILENAME)) {
             GSON.toJson(labelsList, ioWriter);
             ioWriter.flush();
-            ioWriter.close();
         } catch (JsonSyntaxException | IOException e) {
             System.out.println("Exception: " + e + "\n");
         }
     }
     private List<Label> readJson() {
         List<Label> labels = null;
-        try {
-            JsonReader reader = new JsonReader(new FileReader(FILENAME));
+        try (JsonReader reader = new JsonReader(new FileReader(FILENAME))) {
             Type listLabelType = new TypeToken<List<Label>>() {}.getType();
             labels = GSON.fromJson(reader, listLabelType);
             if (labels == null)
                 labels = new ArrayList<>();
-            reader.close();
         } catch (JsonSyntaxException | IOException e) {
             System.out.println("Exception: " + e + "\n");
             return new ArrayList<>();

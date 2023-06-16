@@ -25,15 +25,15 @@ public class GsonPostRepositoryImpl implements PostRepository {
     }
 
     private void rewriteJson(List<Post> postsList) {
-        try {
-            PrintWriter printWriter = new PrintWriter(FILENAME);
+        try (PrintWriter printWriter = new PrintWriter(FILENAME)) {
             printWriter.write("");
             printWriter.flush();
-            printWriter.close();
-            java.io.Writer ioWriter = new FileWriter(FILENAME);
+        } catch (IOException e) {
+            System.out.println("Exception: " + e + "\n");
+        }
+        try (java.io.Writer ioWriter = new FileWriter(FILENAME)) {
             GSON.toJson(postsList, ioWriter);
             ioWriter.flush();
-            ioWriter.close();
         } catch (JsonSyntaxException | IOException e) {
             System.out.println("Exception: " + e + "\n");
         }
@@ -41,8 +41,7 @@ public class GsonPostRepositoryImpl implements PostRepository {
 
     private List<Post> readJson() {
         List<Post> posts = null;
-        try {
-            JsonReader reader = new JsonReader(new FileReader(FILENAME));
+        try (JsonReader reader = new JsonReader(new FileReader(FILENAME))) {
             Type listPostType = new TypeToken<List<Post>>() {}.getType();
             posts = GSON.fromJson(reader, listPostType);
             if (posts == null)

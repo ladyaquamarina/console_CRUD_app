@@ -25,15 +25,15 @@ public class GsonWriterRepositoryImpl implements WriterRepository {
     }
 
     private void rewriteJson(List<Writer> writersList) {
-        try {
-            PrintWriter printWriter = new PrintWriter(FILENAME);
+        try (PrintWriter printWriter = new PrintWriter(FILENAME)) {
             printWriter.write("");
             printWriter.flush();
-            printWriter.close();
-            java.io.Writer ioWriter = new FileWriter(FILENAME);
+        } catch (IOException e) {
+            System.out.println("Exception: " + e + "\n");
+        }
+        try (java.io.Writer ioWriter = new FileWriter(FILENAME)) {
             GSON.toJson(writersList, ioWriter);
             ioWriter.flush();
-            ioWriter.close();
         } catch (JsonSyntaxException | IOException e) {
             System.out.println("Exception: " + e + "\n");
         }
