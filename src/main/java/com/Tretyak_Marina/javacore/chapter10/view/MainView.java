@@ -5,6 +5,7 @@ import java.util.Scanner;
 
 public class MainView {
     public void menu() {
+        System.out.println("Welcome to my CRUD app!");
         while (true) {
             point:
             {
@@ -30,6 +31,7 @@ public class MainView {
                     case 3 -> new LabelView().menu();
                     case 4 -> {
                         System.out.println();
+                        System.out.println("See you soon!");
                         return;
                     }
                     default -> {
