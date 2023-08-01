@@ -17,6 +17,18 @@ public class Post {
         this.labels = new ArrayList<>();
         this.Status = PostStatus.ACTIVE;
     }
+    public Post (int id, String content, Date created, Date updated, List<Label> labels, PostStatus status) {
+        this.id = id;
+        this.content = content;
+        this.created = created;
+        this.updated = updated;
+        this.labels = labels;
+        this.Status = status;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
     public Integer getId() {
         return this.id;
     }
@@ -34,11 +46,6 @@ public class Post {
     }
     public PostStatus getStatus() {
         return this.Status;
-    }
-
-    public void setId(int newId) {
-        this.id = newId;
-        this.updated = new Date();
     }
     public void setContent(String newContent) {
         this.content = newContent;

@@ -3,24 +3,28 @@ package com.Tretyak_Marina.javacore.chapter10.view;
 import com.Tretyak_Marina.javacore.chapter10.controller.LabelController;
 import com.Tretyak_Marina.javacore.chapter10.controller.PostController;
 import com.Tretyak_Marina.javacore.chapter10.model.*;
+import com.Tretyak_Marina.javacore.chapter10.repository.jdbc.JdbcLabelRepositoryImpl;
+import com.Tretyak_Marina.javacore.chapter10.repository.jdbc.JdbcPostRepositoryImpl;
 
 import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
 
 public class PostView {
-    private final PostController controller = new PostController();
+    private final PostController controller = new PostController(new JdbcPostRepositoryImpl());
     public void createPost() {
         Scanner console = new Scanner(System.in);
         System.out.print("Enter the content of the post being created: ");
         String content = console.nextLine();
-        controller.createPost(content);
-        System.out.println("\nNew post has been successfully created!\n");
+        if (controller.createPost(content) == null)
+            System.out.println("\nPost create failed!\n");
+        else
+            System.out.println("\nNew post has been successfully created!\n");
     }
     public void readPost() {
         Scanner console = new Scanner(System.in);
         System.out.print("Enter the ID of the post you are looking for: ");
-        int id = 0;
+        int id;
         try {
             id = console.nextInt();
         } catch (InputMismatchException e) {
@@ -54,7 +58,7 @@ public class PostView {
     public void updatePost() {
         Scanner console = new Scanner(System.in);
         System.out.print("Enter ID of the post you want to update: ");
-        int id = 0;
+        int id;
         try {
             id = console.nextInt();
         } catch (InputMismatchException e) {
@@ -62,10 +66,16 @@ public class PostView {
             return;
         }
         console.nextLine();
-        if (controller.updatePost(id, PostStatus.UNDER_REVIEW) == null)
+        if (controller.updatePost(id, PostStatus.UNDER_REVIEW) == null) {
+            System.out.println("\nThere is no active post with this ID!\n");
             return;
+        }
         System.out.print("Enter new name: ");
         String newContent = console.nextLine();
+        if (newContent.isEmpty()) {
+            System.out.println("\nContent can not be empty!\n");
+            return;
+        }
         controller.updatePost(id, newContent);
         controller.updatePost(id, PostStatus.ACTIVE);
         System.out.println("\nThe post has been successfully updated!\n");
@@ -73,7 +83,7 @@ public class PostView {
     public void addLabelToPost(){
         Scanner console = new Scanner(System.in);
         System.out.print("Enter ID of the post to which you want to add the label: ");
-        int postId = 0;
+        int postId;
         try {
             postId = console.nextInt();
         } catch (InputMismatchException e) {
@@ -81,11 +91,13 @@ public class PostView {
             return;
         }
         console.nextLine();
-        if (controller.updatePost(postId, PostStatus.UNDER_REVIEW) == null)
+        if (controller.updatePost(postId, PostStatus.UNDER_REVIEW) == null) {
+            System.out.println("\nThere is no active post with this ID!\n");
             return;
+        }
         System.out.println("Do you want to create new label (1) or choose the existing one (2)? Print '1' or '2'");
         System.out.print("Your answer: ");
-        int answer = 0;
+        int answer;
         try {
             answer = console.nextInt();
         } catch (InputMismatchException e) {
@@ -94,8 +106,8 @@ public class PostView {
             return;
         }
         console.nextLine();
-        Label label = null;
-        LabelController lc = new LabelController();
+        Label label;
+        LabelController lc = new LabelController(new JdbcLabelRepositoryImpl());
         switch (answer) {
             case 1 -> {
                 System.out.print("Enter the name of the label being created: ");
@@ -104,7 +116,7 @@ public class PostView {
             }
             case 2 -> {
                 System.out.print("Enter ID of the label you want to add to the post: ");
-                int labelId = 0;
+                int labelId;
                 try {
                     labelId = console.nextInt();
                 } catch (InputMismatchException e) {
@@ -133,7 +145,7 @@ public class PostView {
     public void deleteLabelFromPost() {
         Scanner console = new Scanner(System.in);
         System.out.print("Enter ID of the post from which you want to delete the label: ");
-        int postId = 0;
+        int postId;
         try {
             postId = console.nextInt();
         } catch (InputMismatchException e) {
@@ -150,7 +162,7 @@ public class PostView {
             return;
         System.out.println("Label under which number in the list do you want to delete from the post?");
         System.out.print("Enter number: ");
-        int num = 0;
+        int num;
         try {
             num = console.nextInt();
         } catch (InputMismatchException e) {
@@ -172,7 +184,7 @@ public class PostView {
     public void deleteAllLabelsFromPost() {
         Scanner console = new Scanner(System.in);
         System.out.print("Enter ID of the post from which you want to delete all labels: ");
-        int id = 0;
+        int id;
         try {
             id = console.nextInt();
         } catch (InputMismatchException e) {
@@ -189,7 +201,7 @@ public class PostView {
     public void deletePost() {
         Scanner console = new Scanner(System.in);
         System.out.print("Enter ID of the post you want to delete: ");
-        int id = 0;
+        int id;
         try {
             id = console.nextInt();
         } catch (InputMismatchException e) {
@@ -239,7 +251,7 @@ public class PostView {
                 System.out.println("9 - Delete all posts");
                 System.out.println("10 - Exit");
                 System.out.print("Your number is: ");
-                int answer = 0;
+                int answer;
                 try {
                     answer = console.nextInt();
                 } catch (InputMismatchException e) {
@@ -263,7 +275,7 @@ public class PostView {
                         if (y.equals("y"))
                             deleteAllPosts();
                         else
-                            System.out.println("\nDeleting is cancelling!\n");
+                            System.out.println("\nDeleting was canceled!\n");
                     }
                     case 10 -> {
                         System.out.println();

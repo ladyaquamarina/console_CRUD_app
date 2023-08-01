@@ -7,14 +7,22 @@ public class Writer {
     private String firstName;
     private String lastName;
     private List<Post> posts;
-    private PostStatus Status;
 
     public Writer (String firstName, String lastName){
         this.id = null;
         this.firstName = firstName;
         this.lastName = lastName;
         this.posts = new ArrayList<>();
-        this.Status = PostStatus.ACTIVE;
+    }
+    public Writer (int id, String firstName, String lastName, List<Post> posts){
+        this.id = id;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.posts = posts;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
     }
     public Integer getId() {
         return this.id;
@@ -28,21 +36,12 @@ public class Writer {
     public List<Post> getPosts() {
         return this.posts;
     }
-    public PostStatus getStatus() {
-        return Status;
-    }
 
-    public void setId(int id) {
-        this.id = id;
-    }
     public void setFirstName(String firstName) {
         this.firstName = firstName;
     }
     public void setLastName(String lastName) {
         this.lastName = lastName;
-    }
-    public void setStatus(PostStatus status) {
-        Status = status;
     }
 
     public void addPost(Post post) {

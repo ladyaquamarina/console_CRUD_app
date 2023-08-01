@@ -2,25 +2,27 @@ package com.Tretyak_Marina.javacore.chapter10.view;
 
 import com.Tretyak_Marina.javacore.chapter10.controller.LabelController;
 import com.Tretyak_Marina.javacore.chapter10.model.Label;
-import com.Tretyak_Marina.javacore.chapter10.model.PostStatus;
+import com.Tretyak_Marina.javacore.chapter10.repository.jdbc.JdbcLabelRepositoryImpl;
 
 import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
 
 public class LabelView {
-    private final LabelController controller = new LabelController();
+    private final LabelController controller = new LabelController(new JdbcLabelRepositoryImpl());
     public void createLabel() {
         Scanner console = new Scanner(System.in);
         System.out.print("Enter the name of the label being created: ");
         String name = console.nextLine();
-        controller.createLabel(name);
-        System.out.println("New label has been successfully created!\n");
+        if (controller.createLabel(name) == null)
+            System.out.println("Label create failed!\n");
+        else
+            System.out.println("New label has been successfully created!\n");
     }
     public void readLabel() {
         Scanner console = new Scanner(System.in);
         System.out.print("Enter the ID of the label you are looking for: ");
-        int id = 0;
+        int id;
         try {
             id = console.nextInt();
         } catch (InputMismatchException e) {
@@ -54,7 +56,7 @@ public class LabelView {
     public void updateLabel() {
         Scanner console = new Scanner(System.in);
         System.out.print("Enter ID of the label you want to update: ");
-        int id = 0;
+        int id;
         try {
             id = console.nextInt();
         } catch (InputMismatchException e) {
@@ -62,25 +64,31 @@ public class LabelView {
             return;
         }
         console.nextLine();
-        if (controller.updateLabel(id, PostStatus.UNDER_REVIEW) == null)
+        if (controller.getLabel(id) == null) {
+            System.out.println("\nThe label is not found!\n");
             return;
+        }
         System.out.print("Enter new name: ");
         String newName = console.nextLine();
-        controller.updateLabel(id, newName);
-        controller.updateLabel(id, PostStatus.ACTIVE);
-        System.out.println("\nThe label has been successfully updated!\n");
+        if (controller.updateLabel(id, newName) == null)
+            System.out.println("\nLabel update failed!\n");
+        else
+            System.out.println("\nThe label has been successfully updated!\n");
     }
     public void deleteLabel() {
         Scanner console = new Scanner(System.in);
         System.out.print("Enter ID of the label you want to delete: ");
-        int id = 0;
+        int id;
         try {
             id = console.nextInt();
         } catch (InputMismatchException e) {
             System.out.println("\nYour enter is incorrect!\n");
             return;
         }
-        console.nextLine();
+        if (controller.getLabel(id) == null) {
+            System.out.println("\nThere are no labels with this ID!\n");
+            return;
+        }
         controller.deleteLabel(id);
         System.out.println("\nThe label has been successfully deleted!\n");
     }
@@ -91,7 +99,6 @@ public class LabelView {
     private void printLabel(Label l) {
         System.out.println("id: " + l.getId());
         System.out.println("name: " + l.getName());
-        System.out.println("Status: " + l.getStatus());
     }
     public void menu() {
         while (true) {
@@ -107,7 +114,7 @@ public class LabelView {
                 System.out.println("6 - Delete all labels");
                 System.out.println("7 - Exit");
                 System.out.print("Your number is: ");
-                int answer = 0;
+                int answer;
                 try {
                     answer = console.nextInt();
                 } catch (InputMismatchException e) {
@@ -128,15 +135,13 @@ public class LabelView {
                         if (y.equals("y"))
                             deleteAllLabels();
                         else
-                            System.out.println("\nDeleting is cancelling!\n");
+                            System.out.println("\nDeleting was canceled!\n");
                     }
                     case 7 -> {
                         System.out.println();
                         return;
                     }
-                    default -> {
-                        System.out.println("\nYour enter is incorrect!\n");
-                    }
+                    default -> System.out.println("\nYour enter is incorrect!\n");
                 }
             }
         }
