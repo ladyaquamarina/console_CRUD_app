@@ -10,40 +10,6 @@ import java.util.Date;
 import java.util.stream.Collectors;
 
 public class JdbcWriterRepositoryImpl implements WriterRepository {
-    private List<Label> getLabelsOfPost(int postId) {
-        List<Label> labels = new ArrayList<>();
-        ArrayList<Integer> post_label = new ArrayList<>();
-
-        String sql = "select * from post_label where post_id = ?;";
-        try (PreparedStatement statement = RepositoryUtils.getPreparedStatement(sql)) {
-            statement.setInt(1, postId);
-            ResultSet resultSet = statement.executeQuery();
-
-            while (resultSet.next()) {
-                int label_id = resultSet.getInt("label_id");
-                post_label.add(label_id);
-            }
-        } catch (SQLException e) {
-            System.out.println("Exception: " + e);
-        }
-
-        sql = "select * from label";
-        try (PreparedStatement statement = RepositoryUtils.getPreparedStatement(sql)) {
-            ResultSet resultSet = statement.executeQuery();
-            while (resultSet.next()) {
-                int id = resultSet.getInt("id");
-                String name = resultSet.getString("name");
-                post_label.forEach(l -> {
-                    if (l == id) labels.add(new Label(id, name));
-                });
-            }
-        } catch (SQLException e) {
-            System.out.println("Exception: " + e);
-        }
-
-        return labels;
-    }
-
     private List<Post> getPostsOfWriter(int writerId) {
         List<Post> posts = new ArrayList<>();
         ArrayList<Integer> writer_post = new ArrayList<>();
@@ -79,7 +45,7 @@ public class JdbcWriterRepositoryImpl implements WriterRepository {
                 }
                 writer_post.forEach(p -> {
                     if (p == id)
-                        posts.add(new Post(id, content, created, updated, getLabelsOfPost(id), Status));
+                        posts.add(new Post(id, content, created, updated, new ArrayList<>(), Status));
                 });
             }
         } catch (SQLException e) {
@@ -91,13 +57,13 @@ public class JdbcWriterRepositoryImpl implements WriterRepository {
     private void setPostsOfWriter(Writer writer) {
             Set<Integer> oldPostsSet = getPostsOfWriter(writer.getId()).stream()
                     .map(Post::getId).collect(Collectors.toSet());
-            Set<Integer> setOfChangeblePartPosts = new HashSet<>();
+            Set<Integer> setOfChangeablePartPosts = new HashSet<>();
 
             String sql = null;
             if (writer.getPosts().size() > oldPostsSet.size()) {
                 for (Post post : writer.getPosts()) {
                     if (!oldPostsSet.contains(post.getId())) {
-                        setOfChangeblePartPosts.add(post.getId());
+                        setOfChangeablePartPosts.add(post.getId());
                     }
                 }
                 sql = "insert into writer_post (writer_id, post_id) values (?, ?);";
@@ -106,14 +72,14 @@ public class JdbcWriterRepositoryImpl implements WriterRepository {
                         .map(Post::getId).collect(Collectors.toSet());
                 for (int post : oldPostsSet) {
                     if (!newPostsSet.contains(post)) {
-                        setOfChangeblePartPosts.add(post);
+                        setOfChangeablePartPosts.add(post);
                     }
                 }
                 sql = "delete from writer_post where writer_id = ? and post_id = ?;";
             }
 
         try (PreparedStatement statement = RepositoryUtils.getPreparedStatement(sql)) {
-            for (int p : setOfChangeblePartPosts) {
+            for (int p : setOfChangeablePartPosts) {
                 statement.setInt(1, writer.getId());
                 statement.setInt(2, p);
                 statement.executeUpdate();
@@ -127,7 +93,25 @@ public class JdbcWriterRepositoryImpl implements WriterRepository {
         int id = resultSet.getInt("id");
         String firstName = resultSet.getString("firstName");
         String secondName = resultSet.getString("secondName");
-        return new Writer(id, firstName, secondName, new ArrayList<>());
+        Integer post_id = resultSet.getInt("post_id");
+        String content = resultSet.getString("content");
+        Date created = resultSet.getDate("created");
+        Date updated = resultSet.getDate("updated");
+        String strStatus = resultSet.getString("state");
+        PostStatus Status;
+        if (strStatus.equalsIgnoreCase("Active")) {
+            Status = PostStatus.ACTIVE;
+        } else if (strStatus.equalsIgnoreCase("Deleted")) {
+            Status = PostStatus.DELETED;
+        }  else {
+            Status = PostStatus.UNDER_REVIEW;
+        }
+        List<Post> postList = new ArrayList<>();
+        if (post_id != null) {
+            Post post = new Post(post_id, content, created, updated, new ArrayList<>(), Status);
+            postList.add(post);
+        }
+        return new Writer(id, firstName, secondName, postList);
     }
 
     @Override
@@ -168,14 +152,29 @@ public class JdbcWriterRepositoryImpl implements WriterRepository {
     @Override
     public List<Writer> getAll() {
         List<Writer> writers = null;
-        String sql = "select * from Writer;";
+        Set<Integer> ids = new HashSet<>();
+        String sql = """
+                select w.id, w.firstName, w.secondName, p.id as "post_id", p.content, p.created, p.updated, p.state
+                from writer w
+                left outer join writer_post wp
+                on w.id = wp.writer_id
+                left outer join post p
+                on wp.post_id = p.id;""";
         try (PreparedStatement statement = RepositoryUtils.getPreparedStatement(sql)) {
             ResultSet resultSet = statement.executeQuery();
             while (resultSet.next()) {
                 if (writers == null) {
                     writers = new ArrayList<>();
                 }
-                writers.add(getWriterFromResultSet(resultSet));
+                Writer writer = getWriterFromResultSet(resultSet);
+                if (ids.add(writer.getId())) {
+                    writers.add(writer);
+                } else for (Writer w : writers) {
+                    if (Objects.equals(w.getId(), writer.getId())) {
+                        w.addPost(writer.getPosts().get(0));
+                        break;
+                    }
+                }
             }
         } catch (SQLException e) {
             System.out.println("Exception: " + e);
@@ -186,12 +185,23 @@ public class JdbcWriterRepositoryImpl implements WriterRepository {
     @Override
     public Writer getById(Integer integer) {
         Writer writer = null;
-        String sql = "select * from Writer where id = ?;";
+        String sql = """
+                select w.id, w.firstName, w.secondName, p.id as "post_id", p.content, p.created, p.updated, p.state
+                from writer w
+                left outer join writer_post wp
+                on w.id = wp.writer_id
+                left outer join post p
+                on wp.post_id = p.id
+                where w.id = ?;""";
         try (PreparedStatement statement = RepositoryUtils.getPreparedStatement(sql)) {
             statement.setInt(1, integer);
             ResultSet resultSet = statement.executeQuery();
             while (resultSet.next()) {
-                writer = getWriterFromResultSet(resultSet);
+                if (writer == null) {
+                    writer = getWriterFromResultSet(resultSet);
+                } else {
+                    writer.addPost(getWriterFromResultSet(resultSet).getPosts().get(0));
+                }
             }
         } catch (SQLException e) {
             System.out.println("Exception: " + e);

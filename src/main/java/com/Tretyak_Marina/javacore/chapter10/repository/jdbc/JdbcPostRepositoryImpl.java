@@ -93,7 +93,14 @@ public class JdbcPostRepositoryImpl implements PostRepository {
         }  else {
             Status = PostStatus.UNDER_REVIEW;
         }
-        return new Post(id, content, created, updated, getLabelsOfPost(id), Status);
+        Integer label_id = resultSet.getInt("label_id");
+        String label_name = resultSet.getString("name");
+        List<Label> labelList = new ArrayList<>();
+        if (label_id != null) {
+            Label label = new Label(label_id, label_name);
+            labelList.add(label);
+        }
+        return new Post(id, content, created, updated, labelList, Status);
     }
 
     @Override
@@ -132,14 +139,29 @@ public class JdbcPostRepositoryImpl implements PostRepository {
     @Override
     public List<Post> getAll() {
         List<Post> posts = null;
-        String sql = "select * from Post;";
+        Set<Integer> ids = new HashSet<>();
+        String sql = """
+                select p.id, p.content, p.created, p.updated, p.state, l.id as "label_id", l.name
+                from post p
+                left outer join post_label pl
+                on p.id = pl.post_id
+                left outer join label l
+                on pl.label_id = l.id;""";
         try (PreparedStatement statement = RepositoryUtils.getPreparedStatement(sql)) {
             ResultSet resultSet = statement.executeQuery();
             while (resultSet.next()) {
                 if (posts == null) {
                     posts = new ArrayList<>();
                 }
-                posts.add(getPostFromResultSet(resultSet));
+                Post post = getPostFromResultSet(resultSet);
+                if (ids.add(post.getId())) {
+                    posts.add(post);
+                } else for (Post p : posts) {
+                    if (Objects.equals(p.getId(), post.getId())) {
+                        p.addLabel(post.getLabels().get(0));
+                        break;
+                    }
+                }
             }
         } catch (SQLException e) {
             System.out.println("Exception: " + e);
@@ -150,12 +172,23 @@ public class JdbcPostRepositoryImpl implements PostRepository {
     @Override
     public Post getById(Integer integer) {
         Post post = null;
-        String sql = "select * from Post where id = ?;";
+        String sql = """
+                select p.id, p.content, p.created, p.updated, p.state, l.id as "label_id", l.name
+                from post p
+                left outer join post_label pl
+                on p.id = pl.post_id
+                left outer join label l
+                on pl.label_id = l.id
+                where p.id = ?;""";
         try (PreparedStatement statement = RepositoryUtils.getPreparedStatement(sql)) {
             statement.setInt(1, integer);
             ResultSet resultSet = statement.executeQuery();
             while (resultSet.next()) {
-                post = getPostFromResultSet(resultSet);
+                if (post == null) {
+                    post = getPostFromResultSet(resultSet);
+                } else {
+                    post.addLabel(getPostFromResultSet(resultSet).getLabels().get(0));
+                }
             }
         } catch (SQLException e) {
             System.out.println("Exception: " + e);
