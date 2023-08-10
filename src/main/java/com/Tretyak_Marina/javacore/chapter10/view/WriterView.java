@@ -3,15 +3,15 @@ package com.Tretyak_Marina.javacore.chapter10.view;
 import com.Tretyak_Marina.javacore.chapter10.controller.PostController;
 import com.Tretyak_Marina.javacore.chapter10.controller.WriterController;
 import com.Tretyak_Marina.javacore.chapter10.model.*;
-import com.Tretyak_Marina.javacore.chapter10.repository.jdbc.JdbcPostRepositoryImpl;
-import com.Tretyak_Marina.javacore.chapter10.repository.jdbc.JdbcWriterRepositoryImpl;
+import com.Tretyak_Marina.javacore.chapter10.repository.hibernate.HibernatePostRepositoryImpl;
+import com.Tretyak_Marina.javacore.chapter10.repository.hibernate.HibernateWriterRepositoryImpl;
 
 import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
 
 public class WriterView {
-    private final WriterController controller = new WriterController(new JdbcWriterRepositoryImpl());
+    private final WriterController controller = new WriterController(new HibernateWriterRepositoryImpl());
     public void createWriter() {
         Scanner console = new Scanner(System.in);
         System.out.print("Enter first name of the writer being created: ");
@@ -25,7 +25,7 @@ public class WriterView {
     public void readWriter() {
         Scanner console = new Scanner(System.in);
         System.out.print("Enter ID of the writer you are looking for: ");
-        int id;
+        long id;
         try {
             id = console.nextInt();
         } catch (InputMismatchException e) {
@@ -59,7 +59,7 @@ public class WriterView {
     public void updateWriter() {
         Scanner console = new Scanner(System.in);
         System.out.print("Enter ID of the writer you want to update: ");
-        int id;
+        long id;
         try {
             id = console.nextInt();
         } catch (InputMismatchException e) {
@@ -101,7 +101,7 @@ public class WriterView {
     public void addPostToWriter() {
         Scanner console = new Scanner(System.in);
         System.out.print("Enter ID of the writer to which you want to add the post: ");
-        int writerId;
+        long writerId;
         try {
             writerId = console.nextInt();
         } catch (InputMismatchException e) {
@@ -124,7 +124,7 @@ public class WriterView {
         }
         console.nextLine();
         Post post;
-        PostController pc = new PostController(new JdbcPostRepositoryImpl());
+        PostController pc = new PostController(new HibernatePostRepositoryImpl());
         switch (answer) {
             case 1 -> {
                 System.out.print("Enter the content of the post being created: ");
@@ -133,7 +133,7 @@ public class WriterView {
             }
             case 2 -> {
                 System.out.print("\nEnter ID of the post you want to add to the writer: ");
-                int postId;
+                long postId;
                 try {
                     postId = console.nextInt();
                 } catch (InputMismatchException e) {
@@ -158,7 +158,7 @@ public class WriterView {
     public void deletePostFromWriter() {
         Scanner console = new Scanner(System.in);
         System.out.print("Enter ID of the writer from which you want to delete the post: ");
-        int writerId;
+        long writerId;
         try {
             writerId = console.nextInt();
         } catch (InputMismatchException e) {
@@ -189,14 +189,14 @@ public class WriterView {
             System.out.println("\nYour enter is incorrect!\n");
             return;
         }
-        int postId = controller.getWriter(writerId).getPosts().get(num - 1).getId();
+        long postId = controller.getWriter(writerId).getPosts().get(num - 1).getId();
         controller.deletePostFromWriter(writerId, postId);
         System.out.println("\nThe post has been successfully deleted from the post!\n");
     }
     public void deleteAllPostsFromWriter() {
         Scanner console = new Scanner(System.in);
         System.out.print("Enter ID of the writer from which you want to delete all posts: ");
-        int id;
+        long id;
         try {
             id = console.nextInt();
         } catch (InputMismatchException e) {
@@ -213,7 +213,7 @@ public class WriterView {
     public void deleteWriter() {
         Scanner console = new Scanner(System.in);
         System.out.print("Enter ID of the writer you want to delete: ");
-        int id;
+        long id;
         try {
             id = console.nextInt();
         } catch (InputMismatchException e) {

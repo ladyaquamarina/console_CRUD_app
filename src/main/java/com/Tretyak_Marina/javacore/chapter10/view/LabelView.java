@@ -2,14 +2,14 @@ package com.Tretyak_Marina.javacore.chapter10.view;
 
 import com.Tretyak_Marina.javacore.chapter10.controller.LabelController;
 import com.Tretyak_Marina.javacore.chapter10.model.Label;
-import com.Tretyak_Marina.javacore.chapter10.repository.jdbc.JdbcLabelRepositoryImpl;
+import com.Tretyak_Marina.javacore.chapter10.repository.hibernate.HibernateLabelRepositoryImpl;
 
 import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
 
 public class LabelView {
-    private final LabelController controller = new LabelController(new JdbcLabelRepositoryImpl());
+    private final LabelController controller = new LabelController(new HibernateLabelRepositoryImpl());
     public void createLabel() {
         Scanner console = new Scanner(System.in);
         System.out.print("Enter the name of the label being created: ");

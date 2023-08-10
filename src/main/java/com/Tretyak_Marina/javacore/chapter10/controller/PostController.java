@@ -16,7 +16,7 @@ public class PostController {
         Post post = new Post(content);
         return postRepository.add(post);
     }
-    public Post getPost(int postId) {
+    public Post getPost(long postId) {
         if (postId < 1)
             return null;
         return postRepository.getById(postId);
@@ -24,7 +24,7 @@ public class PostController {
     public List<Post> getAllPosts() {
         return postRepository.getAll();
     }
-    public Post updatePost(int postId, String newContent) {
+    public Post updatePost(long postId, String newContent) {
         if (postId < 1 || newContent.isEmpty())
             return null;
         Post post = getPost(postId);
@@ -36,7 +36,7 @@ public class PostController {
         }
         return post;
     }
-    public Post updatePost(int postId, PostStatus newStatus) {
+    public Post updatePost(long postId, PostStatus newStatus) {
         if (postId < 1)
             return null;
         Post post = getPost(postId);
@@ -48,7 +48,7 @@ public class PostController {
         }
         return post;
     }
-    public Post addLabelToPost(int postId, Label label) {
+    public Post addLabelToPost(long postId, Label label) {
         if (postId < 1)
             return null;
         Post post = getPost(postId);
@@ -60,7 +60,7 @@ public class PostController {
         }
         return post;
     }
-    public Post deleteLabelFromPost(int postId, int labelId) {
+    public Post deleteLabelFromPost(long postId, long labelId) {
         if (postId < 1 || labelId < 1)
             return null;
         Post post = getPost(postId);
@@ -72,7 +72,7 @@ public class PostController {
         }
         return post;
     }
-    public Post deleteAllLabelFromPost (int postId) {
+    public Post deleteAllLabelFromPost (long postId) {
         if (postId < 1)
             return null;
         Post post = getPost(postId);
@@ -84,10 +84,16 @@ public class PostController {
         }
         return post;
     }
-    public void deletePost(int postId) {
+    public void deletePost(long postId) {
         if (postId < 1)
             return;
-        postRepository.deleteById(postId);
+        Post post = getPost(postId);
+        try {
+            postRepository.deleteById(postId);
+            post.setStatus(PostStatus.DELETED);
+        } catch (NullPointerException e) {
+            System.out.println("There are no posts with this ID!\n");
+        }
     }
     public void deleteAllPosts() {
         postRepository.deleteAll();

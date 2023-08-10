@@ -17,7 +17,7 @@ public class LabelController {
         Label label = new Label(name);
         return labelRepository.add(label);
     }
-    public Label getLabel(int labelId) {
+    public Label getLabel(long labelId) {
         if (labelId < 1)
             return null;
         return labelRepository.getById(labelId);
@@ -25,7 +25,7 @@ public class LabelController {
     public List<Label> getAllLabels() { // for use in methods that modify objects
         return labelRepository.getAll();
     }
-    public Label updateLabel(int labelId, String newName) {
+    public Label updateLabel(long labelId, String newName) {
         if (labelId < 1 || newName.isEmpty()) {
             return null;
         }
@@ -39,7 +39,7 @@ public class LabelController {
         }
         return label;
     }
-    public void deleteLabel(int labelId) {   // доделать
+    public void deleteLabel(long labelId) {   // доделать
         labelRepository.deleteById(labelId);
     }
     public void deleteAllLabels() {  // доделать

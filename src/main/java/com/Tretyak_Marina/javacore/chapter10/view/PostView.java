@@ -3,15 +3,15 @@ package com.Tretyak_Marina.javacore.chapter10.view;
 import com.Tretyak_Marina.javacore.chapter10.controller.LabelController;
 import com.Tretyak_Marina.javacore.chapter10.controller.PostController;
 import com.Tretyak_Marina.javacore.chapter10.model.*;
-import com.Tretyak_Marina.javacore.chapter10.repository.jdbc.JdbcLabelRepositoryImpl;
-import com.Tretyak_Marina.javacore.chapter10.repository.jdbc.JdbcPostRepositoryImpl;
+import com.Tretyak_Marina.javacore.chapter10.repository.hibernate.HibernateLabelRepositoryImpl;
+import com.Tretyak_Marina.javacore.chapter10.repository.hibernate.HibernatePostRepositoryImpl;
 
 import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
 
 public class PostView {
-    private final PostController controller = new PostController(new JdbcPostRepositoryImpl());
+    private final PostController controller = new PostController(new HibernatePostRepositoryImpl());
     public void createPost() {
         Scanner console = new Scanner(System.in);
         System.out.print("Enter the content of the post being created: ");
@@ -24,7 +24,7 @@ public class PostView {
     public void readPost() {
         Scanner console = new Scanner(System.in);
         System.out.print("Enter the ID of the post you are looking for: ");
-        int id;
+        long id;
         try {
             id = console.nextInt();
         } catch (InputMismatchException e) {
@@ -58,7 +58,7 @@ public class PostView {
     public void updatePost() {
         Scanner console = new Scanner(System.in);
         System.out.print("Enter ID of the post you want to update: ");
-        int id;
+        long id;
         try {
             id = console.nextInt();
         } catch (InputMismatchException e) {
@@ -83,7 +83,7 @@ public class PostView {
     public void addLabelToPost(){
         Scanner console = new Scanner(System.in);
         System.out.print("Enter ID of the post to which you want to add the label: ");
-        int postId;
+        long postId;
         try {
             postId = console.nextInt();
         } catch (InputMismatchException e) {
@@ -107,7 +107,7 @@ public class PostView {
         }
         console.nextLine();
         Label label;
-        LabelController lc = new LabelController(new JdbcLabelRepositoryImpl());
+        LabelController lc = new LabelController(new HibernateLabelRepositoryImpl());
         switch (answer) {
             case 1 -> {
                 System.out.print("Enter the name of the label being created: ");
@@ -116,7 +116,7 @@ public class PostView {
             }
             case 2 -> {
                 System.out.print("Enter ID of the label you want to add to the post: ");
-                int labelId;
+                long labelId;
                 try {
                     labelId = console.nextInt();
                 } catch (InputMismatchException e) {
@@ -145,7 +145,7 @@ public class PostView {
     public void deleteLabelFromPost() {
         Scanner console = new Scanner(System.in);
         System.out.print("Enter ID of the post from which you want to delete the label: ");
-        int postId;
+        long postId;
         try {
             postId = console.nextInt();
         } catch (InputMismatchException e) {
@@ -176,7 +176,7 @@ public class PostView {
             controller.updatePost(postId, PostStatus.ACTIVE);
             return;
         }
-        int labelId = controller.getPost(postId).getLabels().get(num - 1).getId();
+        long labelId = controller.getPost(postId).getLabels().get(num - 1).getId();
         controller.deleteLabelFromPost(postId, labelId);
         controller.updatePost(postId, PostStatus.ACTIVE);
         System.out.println("\nThe label has been successfully deleted from the post!\n");
@@ -184,7 +184,7 @@ public class PostView {
     public void deleteAllLabelsFromPost() {
         Scanner console = new Scanner(System.in);
         System.out.print("Enter ID of the post from which you want to delete all labels: ");
-        int id;
+        long id;
         try {
             id = console.nextInt();
         } catch (InputMismatchException e) {
@@ -201,7 +201,7 @@ public class PostView {
     public void deletePost() {
         Scanner console = new Scanner(System.in);
         System.out.print("Enter ID of the post you want to delete: ");
-        int id;
+        long id;
         try {
             id = console.nextInt();
         } catch (InputMismatchException e) {

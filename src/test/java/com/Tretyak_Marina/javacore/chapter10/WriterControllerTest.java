@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import static java.lang.Integer.valueOf;
+import static java.lang.Long.valueOf;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
@@ -32,22 +32,22 @@ public class WriterControllerTest {
 
     private void setWriters() {
         writers = new ArrayList<>();
-        Writer writer1 = new Writer(1, "first name 1", "last name 1", new ArrayList<>());
-        Writer writer2 = new Writer(2, "first name 2", "last name 2", new ArrayList<>());
+        Writer writer1 = new Writer(1L, "first name 1", "last name 1", new ArrayList<>());
+        Writer writer2 = new Writer(2L, "first name 2", "last name 2", new ArrayList<>());
         writers.add(writer1);
         writers.add(writer2);
     }
 
     private void setWriterRepositoryCreate() {
         Writer writer = new Writer("first name 1", "second name 1");
-        Writer writerReturn = new Writer(1, "first name 1", "last name 1", new ArrayList<>());
+        Writer writerReturn = new Writer(1L, "first name 1", "last name 1", new ArrayList<>());
         when(writerRepository.add(any(Writer.class))).thenReturn(writerReturn);
     }
 
     private void setWriterRepositoryGetWriter() {
-        Writer writer = new Writer(1, "first name 1", "last name 1", new ArrayList<>());
-        when(writerRepository.getById(1)).thenReturn(writer);
-        when(writerRepository.getById(500)).thenReturn(null);
+        Writer writer = new Writer(1L, "first name 1", "last name 1", new ArrayList<>());
+        when(writerRepository.getById(1L)).thenReturn(writer);
+        when(writerRepository.getById(500L)).thenReturn(null);
     }
 
     private void setWriterRepositoryGetAllWriters() {
@@ -55,7 +55,7 @@ public class WriterControllerTest {
     }
 
     private void setWriterRepositoryUpdate() {
-        Writer writer = new Writer(1, "new first name 1", "last name 1", new ArrayList<>());
+        Writer writer = new Writer(1L, "new first name 1", "last name 1", new ArrayList<>());
         when(writerRepository.update(any(Writer.class))).thenReturn(writer);
     }
 
@@ -96,7 +96,7 @@ public class WriterControllerTest {
 
     @Test
     public void shouldUpdateWriterFirstNameTest() {
-        Writer writer = writerController.updateWriter(1, "new first name 1", "first");
+        Writer writer = writerController.updateWriter(1L, "new first name 1", "first");
         assertEquals(valueOf(1), writer.getId());
         assertEquals("new first name 1", writer.getFirstName());
         assertEquals("last name 1", writer.getLastName());
@@ -105,10 +105,10 @@ public class WriterControllerTest {
 
     @Test
     public void shouldUpdateWriterLastNameTest() {
-        Writer result = new Writer(1, "first name 1", "new last name 1", new ArrayList<>());
+        Writer result = new Writer(1L, "first name 1", "new last name 1", new ArrayList<>());
         when(writerRepository.update(any(Writer.class))).thenReturn(result);
 
-        Writer writer = writerController.updateWriter(1, "new last name 1", "last");
+        Writer writer = writerController.updateWriter(1L, "new last name 1", "last");
         assertEquals(valueOf(1), writer.getId());
         assertEquals("first name 1", writer.getFirstName());
         assertEquals("new last name 1", writer.getLastName());
@@ -123,9 +123,9 @@ public class WriterControllerTest {
 
     @Test
     public void shouldAddPostToWriterTest() {
-        Writer writer = new Writer(1, "first name 1", "last name 1", new ArrayList<>());
+        Writer writer = new Writer(1L, "first name 1", "last name 1", new ArrayList<>());
         Date now = new Date();
-        Post post = new Post(1, "post 1", now, now, new ArrayList<>(), PostStatus.ACTIVE);
+        Post post = new Post(1L, "post 1", now, now, writer, new ArrayList<>(), PostStatus.ACTIVE);
         writer.addPost(post);
         when(writerRepository.update(any(Writer.class))).thenReturn(writer);
         Writer result = writerController.addPostToWriter(1, post);
@@ -135,19 +135,25 @@ public class WriterControllerTest {
     @Test
     public void shouldNotAddPostToWriterTest() {
         Date now = new Date();
-        Post post = new Post(1, "post 1", now, now, new ArrayList<>(), PostStatus.ACTIVE);
+        Post post = new Post();
+        post.setId(1L);
+        post.setContent("post 1");
+        post.setCreated(now);
+        post.setUpdated(now);
+        post.setLabels(new ArrayList<>());
+        post.setStatus(PostStatus.ACTIVE);
         assertNull(writerController.addPostToWriter(-1, post));
     }
 
     @Test
     public void shouldDeletePostFromWriterTest() {
-        Writer result = new Writer(1, "first name 1", "last name 1", new ArrayList<>());
+        Writer result = new Writer(1L, "first name 1", "last name 1", new ArrayList<>());
         Date now = new Date();
-        Post post = new Post(1, "post 1", now, now, new ArrayList<>(), PostStatus.ACTIVE);
+        Post post = new Post(1L, "post 1", now, now, result, new ArrayList<>(), PostStatus.ACTIVE);
         when(writerRepository.update(any(Writer.class))).thenReturn(result);
-        Writer writer = new Writer(1, "first name 1", "last name 1", new ArrayList<>());
+        Writer writer = new Writer(1L, "first name 1", "last name 1", new ArrayList<>());
         writer.addPost(post);
-        writer = writerController.deletePostFromWriter(1, 1);
+        writer = writerController.deletePostFromWriter(1L, 1L);
         assertEquals(result.getPosts(), writer.getPosts());
     }
 
@@ -163,9 +169,9 @@ public class WriterControllerTest {
         when(writerRepository.update(any(Writer.class))).thenReturn(result);
 
         Date now = new Date();
-        Post post1 = new Post(1, "post 1", now, now, new ArrayList<>(), PostStatus.ACTIVE);
-        Post post2 = new Post(2, "post 2", now, now, new ArrayList<>(), PostStatus.ACTIVE);
-        Writer writer = new Writer(1, "first name 1", "last name 1", new ArrayList<>());
+        Writer writer = new Writer(1L, "first name 1", "last name 1", new ArrayList<>());
+        Post post1 = new Post(1l, "post 1", now, now, writer, new ArrayList<>(), PostStatus.ACTIVE);
+        Post post2 = new Post(2L, "post 2", now, now, writer, new ArrayList<>(), PostStatus.ACTIVE);
         writer.addPost(post1);
         writer.addPost(post2);
 

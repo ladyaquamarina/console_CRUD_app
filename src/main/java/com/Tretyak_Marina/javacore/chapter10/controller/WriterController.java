@@ -18,7 +18,7 @@ public class WriterController {
         return writerRepository.add(writer);
     }
 
-    public Writer getWriter(int id) {
+    public Writer getWriter(long id) {
         if (id < 1)
             return null;
         return writerRepository.getById(id);
@@ -28,7 +28,7 @@ public class WriterController {
         return writerRepository.getAll();
     }
 
-    public Writer updateWriter(int writerId, String newName, String firstOrLastName) {
+    public Writer updateWriter(long writerId, String newName, String firstOrLastName) {
         if (writerId < 1 || newName.isEmpty() || firstOrLastName.isEmpty())
             return null;
         Writer writer = getWriter(writerId);
@@ -45,7 +45,7 @@ public class WriterController {
         return writer;
     }
 
-    public Writer addPostToWriter(int writerId, Post Post) {
+    public Writer addPostToWriter(long writerId, Post Post) {
         if (writerId < 1)
             return null;
         Writer writer = getWriter(writerId);
@@ -59,7 +59,7 @@ public class WriterController {
         return writer;
     }
 
-    public Writer deletePostFromWriter(int writerId, int postId) {
+    public Writer deletePostFromWriter(long writerId, long postId) {
         if (writerId < 1 || postId < 1)
             return null;
         Writer writer = getWriter(writerId);
@@ -73,7 +73,7 @@ public class WriterController {
         return writer;
     }
 
-    public Writer deleteAllPostFromWriter(int writerId) {
+    public Writer deleteAllPostFromWriter(long writerId) {
         if (writerId < 1)
             return null;
         Writer writer = getWriter(writerId);
@@ -87,7 +87,7 @@ public class WriterController {
         return writer;
     }
 
-    public void deleteWriter(int writerId) {
+    public void deleteWriter(long writerId) {
         writerRepository.deleteById(writerId);
     }
 
