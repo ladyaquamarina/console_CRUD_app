@@ -4,9 +4,18 @@ import javax.persistence.*;
 import java.util.*;
 
 public class Writer {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(name = "first_name")
     private String firstName;
+
+    @Column(name = "last_name")
     private String lastName;
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "writer", cascade = CascadeType.ALL)
     private List<Post> posts;
 
     public Writer() {}
@@ -25,10 +34,6 @@ public class Writer {
         this.posts = posts;
     }
 
-    @Id
-    @SequenceGenerator(name = "writer_seq", sequenceName = "writer_id_seq", allocationSize = 0)
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "writer_seq")
-    @Column(name = "id", unique = true, nullable = false)
     public Long getId() {
         return this.id;
     }
@@ -37,7 +42,6 @@ public class Writer {
         this.id = id;
     }
 
-    @Column(name = "first_name")
     public String getFirstName() {
         return this.firstName;
     }
@@ -46,7 +50,6 @@ public class Writer {
         this.firstName = firstName;
     }
 
-    @Column(name = "last_name")
     public String getLastName() {
         return this.lastName;
     }
@@ -54,8 +57,6 @@ public class Writer {
     public void setLastName(String lastName) {
         this.lastName = lastName;
     }
-
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "writer", cascade = CascadeType.ALL)
 
     public List<Post> getPosts() {
         return this.posts;
@@ -68,6 +69,7 @@ public class Writer {
     public void addPost(Post post) {
         this.posts.add(post);
     }
+
     public void deletePost(long postId) {
         for (Post p : this.posts)
             if (p.getId() == postId) {

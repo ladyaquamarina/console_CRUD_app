@@ -6,16 +6,38 @@ import java.util.*;
 @Entity
 @Table(name = "post", schema = "console_crud")
 public class Post {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(name = "content")
     private String content;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "created")
     private Date created;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "updated")
     private Date updated;
+
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "writer_id")
     private Writer writer;
+
+    @ManyToMany(cascade = {CascadeType.ALL})
+    @JoinTable(
+            name = "post_label",
+            joinColumns = { @JoinColumn(name = "post_id") },
+            inverseJoinColumns = { @JoinColumn(name = "label_id") }
+    )
     private List<Label> labels;
+
+    @Column(name = "status")
     private PostStatus Status;
 
     public Post() {}
-
     public Post (String content) {
         this.id = null;
         this.content = content;
@@ -34,10 +56,6 @@ public class Post {
         this.Status = status;
     }
 
-    @Id
-    @SequenceGenerator(name = "post_seq", sequenceName = "post_id_seq", allocationSize = 0)
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "post_seq")
-    @Column(name = "id", unique = true, nullable = false)
     public Long getId() {
         return this.id;
     }
@@ -46,8 +64,6 @@ public class Post {
         this.id = id;
     }
 
-
-    @Column(name = "content")
     public String getContent() {
         return this.content;
     }
@@ -57,8 +73,6 @@ public class Post {
         setUpdated(new Date());
     }
 
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "created")
     public Date getCreated() {
         return this.created;
     }
@@ -67,8 +81,6 @@ public class Post {
         this.created = created;
     }
 
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "updated")
     public Date getUpdated() {
         return this.updated;
     }
@@ -77,7 +89,6 @@ public class Post {
         this.updated = updated;
     }
 
-    @Column(name = "status")
     public PostStatus getStatus() {
         return this.Status;
     }
@@ -87,8 +98,6 @@ public class Post {
         setUpdated(new Date());
     }
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name = "writer_id")
     public Writer getWriter() {
         return writer;
     }
@@ -98,7 +107,6 @@ public class Post {
         setUpdated(new Date());
     }
 
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "post", cascade = CascadeType.ALL)
     public List<Label> getLabels() {
         return this.labels;
     }

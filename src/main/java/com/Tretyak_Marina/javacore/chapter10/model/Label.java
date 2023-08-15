@@ -1,13 +1,28 @@
 package com.Tretyak_Marina.javacore.chapter10.model;
 
 import javax.persistence.*;
+import java.util.List;
 
 @Entity
 @Table(name = "label", schema = "console_crud")
 public class Label {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long id;
+
+    @Column(name = "name")
     private String name;
-    private Post post;
+
+    @ManyToMany(cascade = {CascadeType.ALL})
+    @JoinTable(
+            name = "post_label",
+            joinColumns = { @JoinColumn(name = "label_id") },
+            inverseJoinColumns = { @JoinColumn(name = "post_id") }
+    )
+    private List<Post> posts;
+
     public Label() {}
 
     public Label (String name) {
@@ -15,16 +30,12 @@ public class Label {
         this.name = name;
     }
 
-    public Label (Long id, String name, Post post) {
+    public Label (Long id, String name, List<Post> posts) {
         this.id = id;
         this.name = name;
-        this.post = post;
+        this.posts = posts;
     }
 
-    @Id
-    @SequenceGenerator(name = "label_seq", sequenceName = "label_id_seq", allocationSize = 0)
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "label_seq")
-    @Column(name = "id", unique = true, nullable = false)
     public Long getId() {
         return this.id;
     }
@@ -33,7 +44,6 @@ public class Label {
         this.id = id;
     }
 
-    @Column(name = "name")
     public String getName() {
         return this.name;
     }
@@ -42,13 +52,11 @@ public class Label {
         this.name = name;
     }
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name = "post_id")
-    public Post getPostId() {
-        return post;
+    public List<Post> getPosts() {
+        return posts;
     }
 
-    public void setPost(Post post) {
-        this.post = post;
+    public void setPost(List<Post> posts) {
+        this.posts = posts;
     }
 }
